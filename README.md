@@ -14,6 +14,12 @@ npm install -g http-server
 Serve on port 5500:
 http-server -p 5500
 
+or (install python)
+run:-
+cd frontend
+python3 -m http.server 5500
+
+
 Now both the frontend and backend is running. but before running you need to ensure that for email otp_verification, follow the instructions given in /Lambda_email_verification/email_verification.py to setup API Gateway and Lambda function in AWS.
 
 After that create S3 bucket with name:- kursi-test-media711 (general purpose) and then inside it create two folders:-
