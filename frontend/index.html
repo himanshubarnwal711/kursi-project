@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kursi - Express Freely</title>
+  <style>
+    :root {
+      --primary: #00bcd4;
+      --secondary: #ffffff;
+      --bg-dark: #121212;
+      --bg-card: #1f1f1f;
+      --text-light: #e0e0e0;
+      --text-muted: #9e9e9e;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 2rem;
+      background-color: var(--bg-card);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .nav-buttons a {
+      text-decoration: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+    }
+
+    .nav-buttons a.signup {
+      background-color: var(--primary);
+      color: var(--secondary);
+    }
+
+    .nav-buttons a.signup:hover {
+      background-color: #00acc1;
+    }
+
+    .nav-buttons a.login {
+      background-color: transparent;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+
+    .nav-buttons a.login:hover {
+      background-color: rgba(0, 188, 212, 0.1);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+
+    h1 {
+      font-size: 3rem;
+      color: var(--secondary);
+      margin-bottom: 1.5rem;
+    }
+
+    p {
+      max-width: 800px;
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    footer {
+      background-color: var(--bg-card);
+      text-align: center;
+      padding: 1rem 2rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2.2rem;
+      }
+
+      p {
+        font-size: 1rem;
+      }
+
+      .nav-buttons a {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header snippet in index.html -->
+  <header>
+    <a href="#" class="logo">Kursi</a>
+    <div class="nav-buttons">
+      <a href="signup.html" class="signup">Sign Up</a>
+      <a href="login.html" class="login">Login</a> <!-- updated -->
+    </div>
+  </header>
+    
+
+  <main>
+    <h1>Welcome to Kursi!</h1>
+    <p>A place where you can post jokes, satire, poems, irony, sarcasm without any boundations.</p>
+    <p>Join us and express your thoughts freely.</p>
+    <p>We are currently in beta. Your feedback is valuable to us.</p>
+  </main>  
+
+  <footer>
+    &copy; 2025 Kursi.com – Express Freely.
+  </footer>
+
+</body>
+</html>

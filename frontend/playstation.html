@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kursi | PlayStation</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      min-height: 100vh;
+      background-color: #000;
+      color: white;
+    }
+    .sidebar {
+      width: 100%;
+      max-width: 320px;
+      background-color: #1c1c1c;
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.4);
+    }
+    .right-sidebar {
+      box-shadow: -2px 0 10px rgba(0, 0, 0, 0.4);
+    }
+    .profile-img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #00bcd4;
+      box-shadow: 0 0 10px #00bcd4;
+    }
+    .username {
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+    .email {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-bottom: 1rem;
+    }
+    .city, .about {
+      font-size: 0.95rem;
+      color: #ccc;
+      text-align: center;
+      padding: 4px 0;
+      width: 100%;
+      word-wrap: break-word;
+    }
+    .about {
+      font-style: italic;
+    }
+    .btn {
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      width: 100%;
+      background-color: #00bcd4;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 188, 212, 0.3);
+    }
+    .btn:hover {
+      background-color: #0097a7;
+      transform: translateY(-1px);
+    }
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+    }
+    #passwordPopup {
+      display: none;
+      position: fixed;
+      top: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 320px;
+      background-color: #1c1c1c;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 25px rgba(0,0,0,0.7);
+      z-index: 100;
+    }
+    #passwordPopup h3 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    #passwordPopup input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #555;
+      border-radius: 6px;
+      background-color: #2b2b2b;
+      color: white;
+    }
+    #passwordPopup .btn {
+      width: 48%;
+      display: inline-block;
+      margin: 6px 1%;
+    }
+
+    .story-form h3 {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    #storyText {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      border-radius: 8px;
+      background-color: #2b2b2b;
+      color: white;
+      border: 1px solid #555;
+      resize: none;
+    }
+    #storyPhoto {
+      margin-top: 10px;
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+      .sidebar {
+        max-width: 100%;
+        box-shadow: none;
+        padding: 1.5rem 1rem;
+      }
+      .main-content {
+        padding: 1rem;
+      }
+      #passwordPopup {
+        width: 90%;
+        top: 25%;
+      }
+    }
+
+    #storyText {
+      background-color: white;
+      color: #000;
+      height: 200px; /* increased vertical height */
+    }
+
+    .custom-file-upload {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: #00bcd4;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 12px;
+      transition: all 0.3s ease;
+    }
+    .custom-file-upload:hover {
+      background-color: #0097a7;
+    }
+
+    #storyPhoto {
+      display: none; /* Hide default file input */
+    }
+
+    #photoPreview {
+      margin-top: 12px;
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,188,212,0.3);
+    }
+
+    .story-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+
+    .story-card {
+      background-color: #1e1e1e;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 0 10px rgba(0,188,212,0.1);
+      color: white;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .story-header {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 0.75rem;
+    }
+
+    .story-username {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #00bcd4;
+    }
+
+    .story-date {
+      font-size: 0.8rem;
+      color: #aaa;
+    }
+
+    .story-photo {
+      max-width: 100%;
+      margin-top: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,188,212,0.2);
+    }
+
+    .story-text {
+      margin-top: 0.75rem;
+      font-size: 1rem;
+      color: #ddd;
+      white-space: pre-wrap;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .story-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .story-card {
+      background-color: #1e1e1e;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 0 10px rgba(0,188,212,0.1);
+      color: white;
+    }
+
+    .story-header {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 0.75rem;
+    }
+
+    .story-username {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #00bcd4;
+    }
+
+    .story-date {
+      font-size: 0.8rem;
+      color: #aaa;
+    }
+
+    .story-photo {
+      max-width: 100%;
+      margin-top: 1rem;
+      border-radius: 10px;
+    }
+
+    .story-text {
+      margin-top: 0.75rem;
+      font-size: 1rem;
+      color: #ddd;
+      white-space: pre-wrap;
+    }
+    .user-photo {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .story-user-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .spinner {
+      text-align: center;
+      font-size: 1.2rem;
+      padding: 1rem;
+      color: #555;
+    }
+    .hidden {
+      display: none;
+    }
+
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .popup-content {
+      background: white;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .popup-content h2 {
+      margin-top: 0;
+    }
+
+    .stories-list .story-card {
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ddd;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 5px 10px;
+    }
+
+    .hidden {
+      display: none;
+    }
+    .delete-story-btn {
+      margin-top: 10px;
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .delete-story-btn:hover {
+      background-color: #e60000;
+    }
+  </style>
+</head>
+<body>
+  <!-- Left Sidebar (Profile Info) -->
+  <div class="sidebar">
+    <img src="" alt="Profile Photo" id="profilePhoto" class="profile-img" />
+    <div class="username" id="username">Loading...</div>
+    <div class="email" id="useremail">...</div>
+    <div class="city"><strong>City:</strong> <span id="city">...</span></div>
+    <div class="about"><strong>About Me:</strong> <span id="aboutMe">...</span></div>
+    <button class="btn" onclick="openPasswordPopup()">Update Password</button>
+    <button class="btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div id="spinner" class="spinner">Loading stories...</div>
+
+  <div class="main-content">
+    <div class="story-feed" id="storyFeed">
+      <!-- Stories will render here -->
+    </div>
+  </div>
+  
+
+  <!-- Right Sidebar (Story Form) -->
+  <div class="sidebar right-sidebar">
+    <div class="story-form">
+      <h3>Post a Story</h3>
+      <textarea id="storyText" maxlength="1000" placeholder="Write your positive thoughts"></textarea>
+    
+      <label for="storyPhoto" class="custom-file-upload">Choose a Photo</label>
+      <input type="file" id="storyPhoto" accept="image/*" onchange="previewPhoto(event)">
+      <img id="photoPreview" src="" alt="Photo Preview" style="display: none;"/>
+    
+      <button class="btn" onclick="postStory()">Post</button>
+      <button id="myStoriesBtn" class="btn my-stories-btn">My Stories</button>
+
+    </div>
+    
+  </div>
+
+  <!-- Password Popup -->
+  <div id="passwordPopup">
+    <h3>Change Password</h3>
+    <input type="password" id="currentPassword" placeholder="Current Password">
+    <input type="password" id="newPassword" placeholder="New Password">
+    <input type="password" id="retypePassword" placeholder="Retype New Password">
+    <button class="btn" onclick="updatePassword()">Submit</button>
+    <button class="btn" onclick="closePasswordPopup()">Cancel</button>
+  </div>
+
+  <div id="myStoriesPopup" class="popup-overlay hidden">
+    <div class="popup-content">
+      <button class="close-btn" id="closePopupBtn">✖</button>
+      <h2>My Stories</h2>
+      <div id="myStoriesList" class="stories-list"></div>
+    </div>
+  </div>
+  
+
+  <script src="../backend/playstation.js"></script>
+</body>
+</html>
