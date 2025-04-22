@@ -65,8 +65,9 @@ and Bucket_Policy:-
     ]
 }
 
-Also create two DynamoDB tables:-
+Also create three DynamoDB tables:-
 user-details with Partition Key userId (Key Index) and in Indexes section set Global secondary indexes (GSI) as email (email-index)
 userStories:- with Partition Key storyId (Key Index) and in Indexes section set GSI as storyId-index.
+user-stories-comments:- with Partition Key commentId (Key Index) and set GSI as storyId (storyId-Index)
 
 That's it run the application like a champ.
