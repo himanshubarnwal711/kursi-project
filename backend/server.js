@@ -208,8 +208,8 @@ app.get('/user/:userId', async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const { name, email, photoUrl, city, about } = result.Item;
-    res.json({ name, email, photoUrl, city, aboutMe: about });
+    const { name, email, photoUrl, city, about, country } = result.Item;
+    res.json({ name, email, photoUrl, city, aboutMe: about, country });
 
   } catch (err) {
     console.error("Error fetching user:", err);
@@ -412,4 +412,78 @@ app.delete('/story/:id', async (req, res) => {
     console.error('Error deleting story:', err);
     res.status(500).json({ message: 'Server error' });
   }
+});
+
+
+// Fetch comments for a specific story
+app.get('/get-comments/:storyId', async (req, res) => {
+    const { storyId } = req.params;
+
+    const params = {
+        TableName: 'user-stories-comments',
+        IndexName: 'storyId-index',  // If using a secondary index for storyId
+        KeyConditionExpression: 'storyId = :storyId',
+        ExpressionAttributeValues: {
+            ':storyId': storyId
+        },
+        ScanIndexForward: true  // Sort by dateTime ascending (newest last)
+    };
+
+    try {
+        const result = await dynamo.query(params).promise();
+        const comments = result.Items;
+
+        // Retrieve user details for each comment
+        const enrichedComments = await Promise.all(comments.map(async (comment) => {
+            const userParams = {
+                TableName: 'user-details',
+                Key: { userId: comment.userId }
+            };
+            const userResult = await dynamo.get(userParams).promise();
+            const user = userResult.Item;
+
+            return {
+                ...comment,
+                userName: user.name,
+                userPhoto: user.photoUrl,  // Assuming you store photoUrl
+                dateTime: new Date(comment.dateTime).toLocaleString()
+            };
+        }));
+
+        res.json(enrichedComments);
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        res.status(500).send('Error fetching comments');
+    }
+});
+
+// Add a comment
+app.post('/add-comment', async (req, res) => {
+    const { storyId, comment, userId } = req.body;
+
+    if (!comment || !userId || !storyId) {
+        return res.status(400).send('Invalid input');
+    }
+
+    const commentId = uuidv4();  // Generate a unique ID for the comment
+    const dateTime = new Date().toISOString();
+
+    const params = {
+        TableName: 'user-stories-comments',
+        Item: {
+            commentId,
+            userId,
+            storyId,
+            dateTime,
+            comment
+        }
+    };
+
+    try {
+        await dynamo.put(params).promise();
+        res.json({ commentId, userId, storyId, dateTime, comment });
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        res.status(500).send('Error adding comment');
+    }
 });

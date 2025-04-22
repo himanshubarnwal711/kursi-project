@@ -1,3 +1,6 @@
+let activeStoryId = null; // This will keep track of the currently viewed story in the popup
+let activeUserId = null; // This will keep track of the currently viewed user in the popup
+
 const userId = localStorage.getItem('userId');
 if (!userId) {
   alert("Not logged in!");
@@ -78,6 +81,7 @@ function logout() {
   window.location.href = 'login.html';
 }
 
+
 async function postStory() {
   const storyText = document.getElementById('storyText').value.trim();
   const photoInput = document.getElementById('storyPhoto');
@@ -152,8 +156,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return res.json();
     })
     .then(stories => {
-      // console.log("Loaded stories:", stories);
-
       feed.innerHTML = "";
       spinner.classList.add("hidden");
 
@@ -163,31 +165,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const storyDate = story.dateTime
           ? new Date(story.dateTime).toLocaleString('en-US', {
-              weekday: 'long', // e.g., "Monday"
-              year: 'numeric', // e.g., "2025"
-              month: 'long', // e.g., "April"
-              day: 'numeric', // e.g., "20"
-              hour: '2-digit', // e.g., "5"
-              minute: '2-digit', // e.g., "47"
-              second: '2-digit', // e.g., "59"
-              hour12: true // e.g., "PM"
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: true
             })
           : "Unknown date";
-
 
         card.innerHTML = `
           <div class="story-header">
             <div class="story-user-info">
-              ${story.userPhoto ? `<img src="${story.userPhoto}" class="user-photo" loading="lazy" />` : ""}
-              <div class="story-username">${story.username || "Unknown"}</div>
+              ${story.userPhoto ? `<img src="${story.userPhoto}" class="user-photo user-info-trigger cursor-pointer" data-userid="${story.userId}" loading="lazy" />` : ""}
+              <div class="story-username user-info-trigger cursor-pointer" data-userid="${story.userId}">${story.username || "Unknown"}</div>
             </div>
             <div class="story-date">${storyDate}</div>
           </div>
           ${story.photoUrl ? `<img src="${story.photoUrl}" class="story-photo" loading="lazy" />` : ""}
           <div class="story-text">${emojify(story.storyText || "")}</div>
+
+          <div class="mt-3 text-right">
+            <button onclick="openCommentsPopup('${story.storyId}')" class="flex items-center gap-1 text-sm text-blue-600 hover:underline hover:scale-105 transition-transform">
+              💬 Comments
+            </button>
+          </div>
+
         `;
 
         feed.appendChild(card);
+      });
+
+      // ✅ Attach event listeners AFTER all cards are rendered
+      document.querySelectorAll('.user-info-trigger').forEach(el => {
+        el.addEventListener('click', async (e) => {
+          const userId = e.target.dataset.userid;
+          if (userId) {
+            const userDetails = await fetchUserBio(userId);
+            showUserBioModal(userDetails);
+          }
+        });
       });
     })
     .catch(err => {
@@ -195,6 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
       spinner.innerText = "Failed to load stories.";
     });
 });
+
 
 function emojify(text) {
   return text
@@ -288,3 +308,111 @@ myStoriesBtn.addEventListener("click", async () => {
 closePopupBtn.addEventListener("click", () => {
   myStoriesPopup.classList.add("hidden");
 });
+
+
+async function fetchUserBio(userId) {
+  try {
+    const res = await fetch(`http://localhost:3000/user/${userId}`);
+    if (!res.ok) throw new Error('Failed to fetch user bio');
+    return await res.json(); // Should contain name, email, city, country, aboutMe, photoUrl
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+}
+
+function showUserBioModal(data) {
+  if (!data) return;
+
+  const content = `
+    <p><strong class="text-blue-600">Name:</strong> ${data.name || "N/A"}</p>
+    <p><strong class="text-blue-600">Email:</strong> ${data.email}</p>
+    <p><strong class="text-blue-600">City:</strong> ${data.city}</p>
+    <p><strong class="text-blue-600">Country:</strong> ${data.country}</p>
+    <p><strong class="text-blue-600">About:</strong> ${data.aboutMe}</p>
+  `;
+
+  document.getElementById("userBioContent").innerHTML = content;
+  document.getElementById("userBioModal").classList.remove("hidden");
+
+  document.getElementById("closeUserBioModal").addEventListener("click", () => {
+    document.getElementById("userBioModal").classList.add("hidden");
+  });  
+}
+
+// Open Comments Popup and Load Comments
+function openCommentsPopup(storyId) {
+  activeStoryId = storyId; // Set the active storyId globally
+  document.getElementById("commentsPopup").style.display = "block";
+  fetchComments(storyId);
+}
+
+// Fetch Comments from Backend
+async function fetchComments(storyId) {
+  const response = await fetch(`http://localhost:3000/get-comments/${storyId}`);
+  const comments = await response.json();
+  
+  const commentsList = document.getElementById("commentsList");
+  commentsList.innerHTML = ""; // Clear existing comments
+
+  comments.forEach(comment => {
+    const commentDiv = document.createElement('div');
+    commentDiv.classList.add('comment');
+    commentDiv.innerHTML = `
+      <div class="comment-header">
+        <img src="${comment.userPhoto}" alt="${comment.userName}" class="user-photo"/>
+        <div class="user-info">
+          <strong>${comment.userName}</strong>
+          <p>${comment.comment}</p>
+        </div>
+        <small class="comment-time">
+          ${comment.dateTime
+            ? new Date(comment.dateTime).toLocaleString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+              })
+            : "Unknown date"}
+        </small>
+      </div>
+    `;
+    commentsList.appendChild(commentDiv);
+  });  
+}
+
+// Post a New Comment
+async function postComment() {
+  const commentText = document.getElementById("commentText").value;
+  if (!commentText || !activeStoryId) return;
+
+  const userId = localStorage.getItem("userId"); // Assuming you store it in localStorage
+
+  const response = await fetch('http://localhost:3000/add-comment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      storyId: activeStoryId,
+      comment: commentText,
+      userId: userId
+    })
+  });
+
+  if (response.ok) {
+    document.getElementById("commentText").value = "";
+    fetchComments(activeStoryId); // Reload comments
+  } else {
+    console.error("Failed to post comment");
+  }
+}
+
+
+// Close the Comments Popup
+function closeCommentsPopup() {
+  document.getElementById("commentsPopup").style.display = "none";
+  document.getElementById("commentText").value = "";         // Clear input
+  document.getElementById("commentsList").innerHTML = "";    // Clear comment list
+}
